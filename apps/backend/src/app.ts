@@ -1,7 +1,8 @@
 import { join } from 'node:path'
 import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload'
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
-import fastifyCors from '@fastify/cors'; // <-- 1. Import the plugin
+import fastifyCors from '@fastify/cors';
+import fastifyCookie from '@fastify/cookie'; // <-- 1. Import cookie plugin
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
 
@@ -16,11 +17,15 @@ const app: FastifyPluginAsync<AppOptions> = async (
 ): Promise<void> => {
   // Place here your custom code!
 
-  // 2. Register the CORS plugin
+  // Register the CORS plugin
   await fastify.register(fastifyCors, {
     origin: 'http://localhost:5173', // <-- Tell it to trust your frontend
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true // <-- Allow cookies to be sent
   });
+
+  // 2. Register Cookie Parser
+  await fastify.register(fastifyCookie);
 
   // Do not touch the following lines
 

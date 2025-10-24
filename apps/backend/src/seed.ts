@@ -1,17 +1,54 @@
 import { PrismaClient, StayType, LocationTag, TravelerTag, Amenity, PriceBand, QualityLevel, NoiseLevel, VerificationStatus } from '@prisma/client';
+import { lucia } from './lib/auth'; // 1. Import Lucia
+import { Argon2id } from 'oslo/password'; // 2. Import password hasher
 
-// Initialize Prisma Client
 const prisma = new PrismaClient();
+const argon2id = new Argon2id(); // 3. Initialize hasher
 
 async function main() {
   console.log('Start seeding ...');
 
-  // Clean up existing mock data
+  // --- Upsert Admin User ---
+  const adminUsername = 'admin';
+  const adminPassword = 'password'; // Use a strong password in production!
+
+  // Check if admin user already exists
+  let adminUser = await prisma.user.findUnique({
+    where: { username: adminUsername },
+  });
+
+  if (!adminUser) {
+    // Hash the password
+    const hashedPassword = await argon2id.hash(adminPassword);
+
+    // Create the user
+    adminUser = await prisma.user.create({
+      data: {
+        id: 'admin_user_01', // Use a predictable ID for easy reference
+        username: adminUsername,
+      },
+    });
+
+    // Create the key (login credentials) for the user
+    await prisma.key.create({
+      data: {
+        id: `username:${adminUsername}`, // Lucia convention
+        userId: adminUser.id,
+        hashedPassword: hashedPassword,
+      },
+    });
+    console.log(`Created admin user with username: ${adminUsername}`);
+  } else {
+    console.log(`Admin user '${adminUsername}' already exists.`);
+  }
+
+  // --- Clean up and create Mock Stays (existing code) ---
+  console.log('Cleaning up mock stays...');
   await prisma.photo.deleteMany({});
   await prisma.stay.deleteMany({ where: { name: { contains: 'Mock' } } });
 
-  // Mock Stay 1: A Backpacker Hostel on North Cliff
-  const mockHostel = await prisma.stay.create({
+  console.log('Creating mock stays...');
+  const mockHostel = await prisma.stay.create({ /* ... existing hostel data ... */ 
     data: {
       name: 'Mock: The Wanderer\'s Hostel',
       type: StayType.HOSTEL,
@@ -52,8 +89,7 @@ async function main() {
     },
   });
 
-  // Mock Stay 2: A Guesthouse Near the Beach
-  const mockGuesthouse = await prisma.stay.create({
+  const mockGuesthouse = await prisma.stay.create({ /* ... existing guesthouse data ... */ 
     data: {
       name: 'Mock: Ocean View Guesthouse',
       type: StayType.GUESTHOUSE_HOTEL,
@@ -101,7 +137,7 @@ async function main() {
   });
 
   console.log('Seeding finished.');
-  console.log({ mockHostel, mockGuesthouse });
+  console.log({ adminUser, mockHostel, mockGuesthouse });
 }
 
 main()
