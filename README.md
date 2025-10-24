@@ -4,54 +4,56 @@ Welcome to the HyprMaps project. This monorepo contains the entire application, 
 
 ## Project Summary
 
-HyprMaps is a full-stack web application designed around interactive, open-source mapping. The core features involve user authentication, interactive map rendering, geospatial data querying, and routing.
+HyprMaps is a full-stack web application designed around interactive, open-source mapping. The core features involve user authentication, interactive map rendering, geospatial data querying, and routing. The MVP focuses on verified "Stays" data to drive user actions (Call, WhatsApp, Navigate).
 
 ## Tech Stack (Current & Final)
 
 - **Monorepo:** pnpm workspaces
-- **Frontend:** **React, Vite, styled-components**, TanStack Query, PWA
-- **Backend:** **Node.js, Fastify, Prisma (v5), Neon PostgreSQL, Lucia Auth (v3)**
-- **Maps:** **MapLibre** (using **MapTiler** base maps), OpenStreetMap, OpenRouteService, PostGIS
+- **Frontend:** **React, Vite, styled-components, React Router, TanStack Query, Vite PWA**
+- **Backend:** **Node.js, Fastify, Prisma (v5), Neon PostgreSQL, Lucia Auth (v3), oslo (for hashing)**
+- **Maps:** **MapLibre** (using MapTiler base maps), OpenStreetMap, OpenRouteService, PostGIS
 - **Deployment:** Cloudflare Pages, Render, Upstash Redis
 
 ---
 
 ## Setup & Progress Log
 
-### 1. Project & Monorepo Foundation
+### 1. Monorepo Foundation & Frontend Styling
 
-The project was established as a **pnpm workspace monorepo**. This involved setting up the root `package.json`, `pnpm-workspace.yaml`, and `tsconfig.json`.
+* **Foundation:** Created a pnpm workspace monorepo with `apps/frontend` (React + Vite) and `apps/backend` (Node.js + Fastify) projects.
+* **Styling Pivot:** Abandoned Tailwind CSS due to conflicts and successfully implemented **styled-components** as the primary styling solution.
 
-* **Application Scaffolding:**
-    * **Frontend:** Created a **React + TypeScript** application in `apps/frontend` using Vite.
-    * **Backend:** Created a **Node.js + Fastify** application in `apps/backend`.
+### 2. Backend, Database & Core Auth
 
-### 2. Styling Solution Pivot (Frontend)
+* **Database:** Connected Fastify to a **Neon PostgreSQL** instance via an `.env` file.
+* **Prisma Downgrade:** Resolved a major version conflict by downgrading **Prisma from v6 to v5**, enabling compatibility with the stable **Lucia Auth v3** and its adapter.
+* **Database Schema:** Applied a large migration to create a comprehensive `Stay` model, including all **Location Tags**, **Amenities**, **Quality Fields**, and **Google Review** data.
+* **Login & Security:**
+    * Seeded a default admin user (`admin`/`password`) using `oslo/password`.
+    * Implemented **POST /auth/login** endpoint to handle authentication and issue secure session cookies via Lucia.
+    * Created and applied an **authentication middleware hook** (`authHook.ts`) to protect admin routes.
 
-An initial plan to use Tailwind CSS was abandoned due to persistent CLI, PostCSS, and Vite configuration errors.
+### 3. Frontend UI and API Integration
 
-* **Decision:** All traces of Tailwind CSS were removed.
-* **Success:** **`styled-components`** was successfully installed, configured, and tested as the primary styling solution for the frontend application.
+* **API Connection:** Successfully fetched mock data from the backend's **GET /stays** endpoint using **TanStack Query**, resolving cross-origin security issues via the `@fastify/cors` plugin.
+* **Map Interaction:** Implemented **MapLibre** to render interactive markers on a map, which update dynamically based on data from the backend.
+* **Main UI:** Built the main screen UI, including:
+    * **Zomato-Style Filters:** A working horizontal filter bar for **Location Tags**.
+    * **Google Maps-Style Card:** A slide-up component shown on marker click, displaying basic stay info and action buttons.
+    * **Action Buttons:** Implemented **Call**, **WhatsApp**, and **Navigate** buttons with working `tel:`, `whatsapp://`, and `maps.google.com` links.
+* **Detail View:** Implemented **React Router** for navigation and created the **Stay Detail Page** (`/stay/:id`), which:
+    * Fetches full data via the **GET /stays/:id** endpoint.
+    * Displays **Pricing** and a complete **Amenities Checklist**.
 
-### 3. Backend Core: Database & Authentication
+### **Current Status: Core Application Built and Protected**
 
-The core backend services were built and integrated, requiring significant version conflict resolution.
+The project is fully operational. Both the public-facing API and the protected admin API endpoints are ready. The main user flow (Map -> Filter -> Card -> Detail Page) is complete and functional.
 
-* **Database:** A **Neon PostgreSQL** database was created and connected via the `DATABASE_URL` in the `.env` file.
-* **Prisma Setup:** **Prisma** was installed and configured. A critical pathing error in the monorepo setup was resolved by installing `dotenv-cli` and creating a custom `db:migrate:dev` script.
-* **Lucia Auth Integration (Version Downgrade):** A major conflict was discovered where the latest stable Lucia adapter was incompatible with **Prisma v6**. This was resolved by successfully **downgrading Prisma to v5**. This allowed for the stable installation of **`lucia@^3`** and its corresponding Prisma adapter.
-* **Final Status:** All authentication services are fully configured and functional.
+---
 
-### 4. Frontend Features & Map Integration
+## Next Development Focus (Admin & Features)
 
-The remaining core features for the frontend application were installed and configured.
+The next step is to build out the **Login UI** and the **Admin Console** so you can manage your data using a graphical interface.
 
-* **Core Libraries:** **TanStack Query** was configured for data fetching, and **Vite PWA** was configured in `vite.config.ts` to enable application installation.
-* **Map Integration:**
-    * **MapTiler:** An API key was obtained from MapTiler for map tile services.
-    * **MapLibre:** `maplibre-gl` and `openrouteservice-js` were installed.
-    * The placeholder component was replaced with a new component that successfully renders a full-screen, interactive world map using the MapTiler key.
-
-### **Current Status: Setup Complete**
-
-The monorepo foundation is stable. Every single core technology required for the application's architecture is now installed, configured, and proven to be working. Development on application features can now begin.
+1.  **Implement Auth UI:** Build the frontend form for **POST /auth/login** to securely get a session cookie.
+2.  **Build Admin Console:** Create the UI for managing your "Stays" using the protected `/admin/stays` CRUD API endpoints.
