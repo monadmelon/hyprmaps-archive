@@ -1,54 +1,57 @@
 # HyprMaps
 
-Welcome to the HyprMaps. This project contains the frontend, backend, and shared packages for the HyprMaps application.
+Welcome to the HyprMaps project. This monorepo contains the entire application, including the frontend, backend, and shared packages.
 
-## Tech Stack
+## Project Summary
 
-- **Frontend:** React, Vite, Tailwind CSS, TanStack Query, PWA
-- **Backend:** Node.js, Fastify, Prisma, Neon PostgreSQL, Lucia Auth
-- **Maps:** MapLibre, OpenStreetMap, OpenRouteService, PostGIS
+HyprMaps is a full-stack web application designed around interactive, open-source mapping. The core features involve user authentication, interactive map rendering, geospatial data querying, and routing.
+
+## Tech Stack (Current & Final)
+
+- **Monorepo:** pnpm workspaces
+- **Frontend:** **React, Vite, styled-components**, TanStack Query, PWA
+- **Backend:** **Node.js, Fastify, Prisma (v5), Neon PostgreSQL, Lucia Auth (v3)**
+- **Maps:** **MapLibre** (using **MapTiler** base maps), OpenStreetMap, OpenRouteService, PostGIS
 - **Deployment:** Cloudflare Pages, Render, Upstash Redis
 
-## Getting Started
+---
 
-### Prerequisites
+## Setup & Progress Log
 
-- [Node.js](https://nodejs.org/) (v20.x or later)
-- [pnpm](https://pnpm.io/installation) (v8.x or later)
+### 1. Project & Monorepo Foundation
 
+The project was established as a **pnpm workspace monorepo**. This involved setting up the root `package.json`, `pnpm-workspace.yaml`, and `tsconfig.json`.
 
-    ```
+* **Application Scaffolding:**
+    * **Frontend:** Created a **React + TypeScript** application in `apps/frontend` using Vite.
+    * **Backend:** Created a **Node.js + Fastify** application in `apps/backend`.
 
-**Components & Data Flow:**
+### 2. Styling Solution Pivot (Frontend)
 
-1.  **User/Client (Browser):**
+An initial plan to use Tailwind CSS was abandoned due to persistent CLI, PostCSS, and Vite configuration errors.
 
-    - The user interacts with the **Frontend**, a React-based Single Page Application (PWA).
-    - The frontend is built with Vite and styled with Tailwind CSS.
-    - It handles all UI rendering, state management, and user input.
-    - For data fetching and caching from the backend, it uses **TanStack Query**.
+* **Decision:** All traces of Tailwind CSS were removed.
+* **Success:** **`styled-components`** was successfully installed, configured, and tested as the primary styling solution for the frontend application.
 
-2.  **Frontend -> Backend Communication:**
+### 3. Backend Core: Database & Authentication
 
-    - All communication happens via a RESTful or GraphQL API exposed by the backend.
-    - Requests are sent to the **Backend API** (e.g., `api.hyprmaps.com`).
-    - Authentication is handled via tokens (managed by **Lucia Auth**).
+The core backend services were built and integrated, requiring significant version conflict resolution.
 
-3.  **Backend (Node.js Server):**
+* **Database:** A **Neon PostgreSQL** database was created and connected via the `DATABASE_URL` in the `.env` file.
+* **Prisma Setup:** **Prisma** was installed and configured. A critical pathing error in the monorepo setup was resolved by installing `dotenv-cli` and creating a custom `db:migrate:dev` script.
+* **Lucia Auth Integration (Version Downgrade):** A major conflict was discovered where the latest stable Lucia adapter was incompatible with **Prisma v6**. This was resolved by successfully **downgrading Prisma to v5**. This allowed for the stable installation of **`lucia@^3`** and its corresponding Prisma adapter.
+* **Final Status:** All authentication services are fully configured and functional.
 
-    - Built with **Fastify** (or Express) for high performance.
-    - It serves as the core business logic layer.
-    - **Prisma ORM** is used to interact with the database, providing a type-safe data access layer.
-    - **Lucia Auth** manages user sessions, authentication, and authorization.
+### 4. Frontend Features & Map Integration
 
-4.  **Data & Services:**
+The remaining core features for the frontend application were installed and configured.
 
-    - **Neon PostgreSQL:** Our primary database. It stores all application data like users, map points, and reviews. The **PostGIS** extension will be enabled for geospatial queries.
-    - **Upstash Redis:** Used for caching, session storage, and potentially as a message broker for background jobs.
-    - **OpenStreetMap (OSM):** Provides the base map tiles and raw geospatial data.
-    - **OpenRouteService:** An external API used for routing, directions, and isochrone calculations based on OSM data.
+* **Core Libraries:** **TanStack Query** was configured for data fetching, and **Vite PWA** was configured in `vite.config.ts` to enable application installation.
+* **Map Integration:**
+    * **MapTiler:** An API key was obtained from MapTiler for map tile services.
+    * **MapLibre:** `maplibre-gl` and `openrouteservice-js` were installed.
+    * The placeholder component was replaced with a new component that successfully renders a full-screen, interactive world map using the MapTiler key.
 
-5.  **Deployment & Infrastructure:**
-    - **Frontend:** Deployed as a static site on **Cloudflare Pages** for global distribution and performance.
-    - **Backend:** Deployed as a containerized application on **Render** or **Railway**.
-    - **CI/CD:** A GitHub Actions pipeline will be triggered on every push to `main` to run linting, tests, and builds, followed by deployment.
+### **Current Status: Setup Complete**
+
+The monorepo foundation is stable. Every single core technology required for the application's architecture is now installed, configured, and proven to be working. Development on application features can now begin.
