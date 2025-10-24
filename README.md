@@ -49,11 +49,10 @@ HyprMaps is a full-stack web application designed around interactive, open-sourc
 
 The project is fully operational. Both the public-facing API and the protected admin API endpoints are ready. The main user flow (Map -> Filter -> Card -> Detail Page) is complete and functional.
 
----
+**Auth UI:** Built the frontend form for **POST /auth/login** to securely get a session cookie and redirect to the admin page.
 
 ## Next Development Focus (Admin & Features)
 
-The next step is to build out the **Login UI** and the **Admin Console** so you can manage your data using a graphical interface.
+The next step is to build out the **Admin Console** so you can manage your data using a graphical interface.
 
-1.  **Implement Auth UI:** Build the frontend form for **POST /auth/login** to securely get a session cookie.
-2.  **Build Admin Console:** Create the UI for managing your "Stays" using the protected `/admin/stays` CRUD API endpoints.
+1.  **Build Admin Console:** Create the UI for managing your "Stays" using the protected `/admin/stays` CRUD API endpoints.
