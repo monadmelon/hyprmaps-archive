@@ -1,0 +1,232 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- CORE STAY MODEL ---
+// Based on your product decisions document
+
+model Stay {
+  id                String   @id @default(cuid())
+  name              String
+  type              StayType // Enum
+  geo_latitude      Float
+  geo_longitude     Float
+  address           String
+  phone             String? // Optional, as some may be WhatsApp only
+  whatsapp          String?
+  description       String   @db.Text
+  website_social    String?
+  operational_status OperationalStatus @default(OPEN) // Enum
+  season_label      String?  // e.g., "Open Oct-Apr"
+  verification_status VerificationStatus @default(UNVERIFIED) // Enum
+  completeness_score  Int      @default(0) // 0-100
+
+  photos            Photo[] // Relation to Photo model
+  
+  // Relational Tags
+  location_tags     LocationTag[]
+  traveler_tags     TravelerTag[]
+  amenities         Amenity[]
+
+  // Pricing
+  price_band        PriceBand // Enum
+  price_range_low   String?   // e.g., "800-1500"
+  price_range_high  String?   // e.g., "1500-3000"
+  price_monthly_note String?   // e.g., "Special monthly rates available"
+
+  // Quality Fields
+  cleanliness_level QualityLevel? // Enum
+  noise_level       NoiseLevel?   // Enum
+  light_level       QualityLevel? // Enum
+  airflow           String?       // e.g., "Good breeze"
+  view_note         String?
+  bathroom_type     BathroomType? // Enum
+  hot_water_type    HotWaterType? // Enum
+  pressure_note     String?
+  wifi_speed_mbps   Int?
+  wifi_reliability  WifiReliability? // Enum
+  in_room_signal    QualityLevel?    // Enum
+  outlets_count_bucket String?       // e.g., "2-4 outlets"
+
+  // Long-Term Fields
+  spaciousness_flag   Boolean  @default(false)
+  room_dimensions_text String?  // e.g., "Approx 4x5m"
+  bed_size          BedSize? // Enum
+  kitchen_quality   KitchenQuality? // Enum
+  real_cooking_flag Boolean  @default(false)
+  stove_flag        Boolean  @default(false)
+  fridge_flag       Boolean  @default(false)
+  utensils_flag     Boolean  @default(false)
+  counter_space_flag Boolean @default(false)
+  laundry_machine   Boolean  @default(false)
+  drying_space      Boolean  @default(false)
+  cleaning_frequency String?  // e.g., "On request", "Weekly"
+  furnishing_level  String?  // e.g., "Fully furnished"
+  storage_ok        Boolean  @default(false)
+  mosquito_protection String? // e.g., "Nets on windows"
+  pest_control_recency String? // e.g., "Monthly"
+  parking_detail    String?  // e.g., "2-wheeler only"
+
+  // Internal Scores
+  quality_score_internal Int @default(0) // 1-5
+  long_term_score_internal Int @default(0) // 0-100
+
+  // Google Review Fields (as requested)
+  google_place_id     String?  @unique
+  google_review_rating Float?
+  google_review_count Int?
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// --- RELATED MODELS & ENUMS ---
+
+// Photo model to store multiple images per stay
+model Photo {
+  id      String @id @default(cuid())
+  url     String // URL from image storage (e.g., Cloudflare R2)
+  caption String?
+  source  String? // e.g., "Owner", "User Contribution"
+  stayId  String
+  Stay    Stay   @relation(fields: [stayId], references: [id], onDelete: Cascade)
+}
+
+// --- ENUMS for Tags & Fields ---
+
+enum StayType {
+  HOSTEL
+  GUESTHOUSE_HOTEL
+  APARTMENT_HOMESTAY
+  RESORT_VILLA
+}
+
+enum LocationTag {
+  BEACHFRONT
+  NEAR_BEACH
+  NORTH_CLIFF
+  SOUTH_CLIFF
+  TOWN_INLAND
+}
+
+enum TravelerTag {
+  BACKPACKERS
+  COUPLES
+  FAMILIES
+  SOLO
+  REMOTE_WORKERS
+}
+
+enum Amenity {
+  AC
+  WIFI
+  HOT_WATER
+  PARKING
+  KITCHEN
+  POOL
+  RESTAURANT
+  YOGA
+  WASHING_MACHINE
+  POWER_BACKUP
+}
+
+enum PriceBand {
+  BUDGET
+  MID
+  PREMIUM
+}
+
+enum QualityLevel {
+  POOR
+  BASIC
+  GOOD
+  EXCELLENT
+}
+
+enum NoiseLevel {
+  QUIET
+  MODERATE
+  NOISY
+}
+
+enum BathroomType {
+  PRIVATE_ATTACHED
+  PRIVATE_DETACHED
+  SHARED
+}
+
+enum HotWaterType {
+  NONE
+  SOLAR
+  GEYSER_INSTANT
+  GEYSER_STORAGE
+}
+
+enum WifiReliability {
+  NONE
+  BASIC_BROWSING
+  VIDEO_CALL_CAPABLE
+  EXCELLENT
+}
+
+enum BedSize {
+  SINGLE
+  DOUBLE
+  QUEEN
+  KING
+}
+
+enum KitchenQuality {
+  NONE
+  BASIC_KETTLE
+  SHARED_KITCHEN
+  PRIVATE_KITCHENETTE
+  PRIVATE_FULL_KITCHEN
+}
+
+enum OperationalStatus {
+  OPEN
+  CLOSED_TEMPORARILY
+  CLOSED_PERMANENTLY
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  VERIFIED // Geo + phone check
+  BUSINESS_VERIFIED // Claimed by owner
+}
+
+// --- AUTH MODELS (Unchanged) ---
+// We keep the Lucia tables we already made
+
+model User {
+  id       String    @id
+  username String    @unique
+  sessions Session[]
+  keys     Key[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Key {
+  id             String  @id
+  hashedPassword String?
+  userId         String
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([id, userId])
+}

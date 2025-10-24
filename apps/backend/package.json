@@ -1,0 +1,46 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "This project was bootstrapped with Fastify-CLI.",
+  "main": "app.ts",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/server.js",
+    "build:ts": "tsc -p tsconfig.json",
+    "dev": "dotenv -e .env -- ts-node-dev --respawn --transpile-only src/server.ts",
+    "db:migrate:dev": "dotenv -e .env -- prisma migrate dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "prisma": {
+    "seed": "ts-node src/seed.ts"
+  },
+  "dependencies": {
+    "@fastify/autoload": "^6.0.0",
+    "@fastify/cors": "^11.1.0",
+    "@fastify/sensible": "^6.0.0",
+    "@lucia-auth/adapter-prisma": "^4.0.1",
+    "@prisma/client": "^5",
+    "fastify": "^5.0.0",
+    "fastify-cli": "^7.4.0",
+    "fastify-plugin": "^5.0.0",
+    "lucia": "^3.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.1.0",
+    "c8": "^10.1.2",
+    "concurrently": "^9.0.0",
+    "dotenv-cli": "^10.0.0",
+    "fastify-tsconfig": "^3.0.0",
+    "nodemon": "^3.1.10",
+    "prisma": "^5.22.0",
+    "ts-node": "^10.4.0",
+    "ts-node-dev": "^2.0.0",
+    "tsc-watch": "^6.2.0",
+    "typescript": "~5.8.3"
+  }
+}
