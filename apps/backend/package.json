@@ -30,7 +30,8 @@
     "fastify-cli": "^7.4.0",
     "fastify-plugin": "^5.0.0",
     "lucia": "^3.2.2",
-    "oslo": "^1.2.1"
+    "oslo": "^1.2.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^22.1.0",
